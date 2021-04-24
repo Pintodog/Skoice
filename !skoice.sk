@@ -295,8 +295,10 @@ on user leave voice seen by "Skoice":
 	{_left} is true
 	set {_player} to yaml value "links.%discord id of event-user%" from "data" parsed as a player
 	send skoiceDisconnectMessage() to {_player}
+	execute console command "team leave"
 
 on user join voice seen by "Skoice":
 	discord id of event-channel is yaml value "main-channel" from "config"
 	set {_player} to yaml value "links.%discord id of event-user%" from "data" parsed as a player
 	send skoiceConnectMessage() to {_player}
+	execute console command "team join ProximityChat {_player}"
