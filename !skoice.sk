@@ -20,10 +20,10 @@ import:
 	java.net.URL
 
 function skoiceConnectMessage() :: text:
-	return "&eSkoice &8• &aConnected to proximity voice chat!"
+	return "&ePintoCraft ProximityChat &8• &aConnected to proximity voice chat!"
 
 function skoiceDisconnectMessage() :: text:
-	return "&eSkoice &8• &cDisconnected from proximity voice chat!"
+	return "&ePintoCraft ProximityChat &8• &cDisconnected from proximity voice chat!"
 
 function skoiceLinkMessage(channel: string) :: text:
 	return "Your accounts have been successfully linked. You can now connect to voice channel %{_channel}% to start proximity voice chat."
@@ -38,9 +38,9 @@ function skoiceServiceMessage(message: string, error: boolean):
 	else:
 		Skript.error({_message})
 		set {_color} to "&c"
-	send formatted "&eSkoice &8• %{_color}%%{_message}%" to all players where [player input has permission "skript.admin"]
+	send formatted "&ePintoCraft ProximityChat &8• %{_color}%%{_message}%" to all players where [player input has permission "skript.admin"]
 
-command /skoice [<text>]:
+command /prox [<text>]:
 	executable by: players
 	trigger:
 		if arg-1 is "link":
@@ -62,11 +62,11 @@ command /skoice [<text>]:
 				set {_bot} to "Skoice" parsed as bot
 				set {_botID} to {_bot}.getSelfUser().getId()
 				set {_serverName} to discord name of server with id yaml value "server" from "config"
-				send formatted "&eSkoice &8• &aTo complete the link, send the following code to &o%discord name of user with id {_botID}%##%discriminator of user with id {_botID}%&r&a on the Discord server (%{_serverName}%): &l%{_code}%"
+				send formatted "&ePintoCraft ProximityChat &8• &aTo complete the link, send the following code to &o%discord name of user with id {_botID}%##%discriminator of user with id {_botID}%&r&a on the Discord server (%{_serverName}%): &l%{_code}%"
 			else:
 				set {_account} to yaml value "links.%uuid of player%" from "data"
 				set {_account} to "%{_account}%"
-				send formatted "&eSkoice &8• &cYou've already linked your account to Discord (%discord name of user with id {_account}%##%discriminator of user with id {_account}%). Use /skoice unlink to cancel."
+				send formatted "&ePintoCraft ProximityChat &8• &cYou've already linked your account to Discord (%discord name of user with id {_account}%##%discriminator of user with id {_account}%). Use /prox unlink to cancel."
 			stop		
 		if arg-1 is "unlink":
 			if yaml node "links.%uuid of player%" from "data" has value:
@@ -74,13 +74,13 @@ command /skoice [<text>]:
 				clear yaml value "links.%{_account}%" from "data"
 				clear yaml value "links.%uuid of player%" from "data"
 				save yaml "data"
-				send "&eSkoice &8• &aYour accounts are no longer linked."
+				send "&ePintoCraft ProximityChat &8• &aYour accounts are no longer linked."
 			else:
-				send "&eSkoice &8• &cYou didn't link your account to Discord."
+				send "&ePintoCraft ProximityChat &8• &cYou didn't link your account to Discord."
 			stop
 		send "%nl%&eSkoice &8• &aCopyright 2020 : Clément Raynaud (carlodrift)%nl%"
-		send "&a&l/skoice link&r &a: Link your Minecraft account to Discord. Required to start proximity voice chat."
-		send "&a&l/skoice unlink&r &a: Unlink your Minecraft and Discord accounts.%nl%"
+		send "&a&l/prox link&r &a: Link your Minecraft account to Discord. Required to start proximity voice chat."
+		send "&a&l/prox unlink&r &a: Unlink your Minecraft and Discord accounts.%nl%"
 
 on skript start:
 	while yaml node "ready" from "temp" doesn't have value:
@@ -258,14 +258,14 @@ on private message receive seen by "Skoice":
 			save yaml "data"
 			set {_channelName} to discord name of channel with id yaml value "main-channel" from "config"
 			set {_channelChat} to "&o%{_channelName}%&r&a"
-			send formatted "&eSkoice &8• &a%skoiceLinkMessage({_channelChat})%" to {_uuid} parsed as a player
+			send formatted "&ePintoCraft ProximityChat &8• &a%skoiceLinkMessage({_channelChat})%" to {_uuid} parsed as a player
 			set {_channelDiscord} to "`%{_channelName}%`"
 			reply with skoiceLinkMessage({_channelDiscord})
 			stop
 		else:
 			reply with "Your Discord account is already linked to a Minecraft account."
 			stop
-	reply with "The entered code is invalid, check its accuracy with the `/skoice link` in-game command."
+	reply with "The entered code is invalid, check its accuracy with the `/prox link` in-game command."
 
 on member switch channel seen by "Skoice":
 	discord id of event-guild is yaml value "server" from "config"
@@ -307,3 +307,9 @@ on user join voice seen by "Skoice":
 	set {_player} to yaml value "links.%discord id of event-user%" from "data" parsed as a player
 	send skoiceConnectMessage() to {_player}
 	execute console command "team join ProximityChat %{_player}%"
+
+on quit:
+	set {_quitPLayer} to player
+	set {_quitPLayerID} to yaml value "links.%uuid of %{_quitPLayer}%"
+	if {_quitPLayerID} has value:
+		move user with id "%{_quitPLayerID}%" in guild with id yaml value "server" from "config" to channel with id "%{_mainChannel}%" with "Skoice"
