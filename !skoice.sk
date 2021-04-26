@@ -160,6 +160,11 @@ on script load:
 		else:
 			skoiceServiceMessage("You must grant ADMINISTRATOR permission to the bot, otherwise it won't be able to operate.", true)
 
+on script load:
+	execute console command "team add ProximityChat"
+	execute console command "team modify ProximityChat suffix  [♫]"
+	send "Skoice Teams Loaded!"
+
 on join:
 	player has permission "skript.admin"
 	send formatted "&eSkoice &8• &cSkoice isn't ready to operate yet. Reload the script (/skript reload %script%) for further details." if yaml node "ready" from "temp" doesn't have value
@@ -295,10 +300,10 @@ on user leave voice seen by "Skoice":
 	{_left} is true
 	set {_player} to yaml value "links.%discord id of event-user%" from "data" parsed as a player
 	send skoiceDisconnectMessage() to {_player}
-	execute console command "team leave"
+	execute console command "team leave %{_player}%"
 
 on user join voice seen by "Skoice":
 	discord id of event-channel is yaml value "main-channel" from "config"
 	set {_player} to yaml value "links.%discord id of event-user%" from "data" parsed as a player
 	send skoiceConnectMessage() to {_player}
-	execute console command "team join ProximityChat {_player}"
+	execute console command "team join ProximityChat %{_player}%"
